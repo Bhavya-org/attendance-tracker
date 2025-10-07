@@ -574,3 +574,51 @@ button:hover {
     margin-bottom: 10px;
     line-height: 1.5;
 }
+
+/* Bulk Actions */
+.bulk-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+    flex-wrap: wrap;
+}
+
+.bulk-btn, .export-list-btn, .import-list-btn {
+    padding: 8px 15px;
+    font-size: 0.9rem;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.bulk-btn {
+    background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+    color: white;
+}
+
+.export-list-btn {
+    background: linear-gradient(135deg, #28a745 0%, #218838 100%);
+    color: white;
+}
+
+.import-list-btn {
+    background: linear-gradient(135deg, #fd7e14 0%, #e8650e 100%);
+    color: white;
+}
+
+.bulk-btn:hover, .export-list-btn:hover, .import-list-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Mobile responsiveness for bulk actions */
+@media (max-width: 768px) {
+    .bulk-actions {
+        flex-direction: column;
+    }
+    
+    .bulk-btn, .export-list-btn, .import-list-btn {
+        width: 100%;
+    }
+}

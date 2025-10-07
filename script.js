@@ -7,7 +7,8 @@ let selectedEmployee = null;
 // Initialize the application
 document.addEventListener('DOMContentLoaded', function() {
     displayCurrentDate();
-    loadData();
+    loadDataFromURL(); // Load data from URL first
+    loadData(); // Then load local data
     initializeShareLink();
     renderEmployeeList();
     updateSummary();
@@ -18,6 +19,35 @@ document.addEventListener('DOMContentLoaded', function() {
         switchMode('employee');
     }
 });
+
+// Load data from URL parameters
+function loadDataFromURL() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const dataParam = urlParams.get('data');
+    
+    if (dataParam) {
+        try {
+            const decodedData = JSON.parse(atob(dataParam));
+            if (decodedData.employees && Array.isArray(decodedData.employees)) {
+                employees = decodedData.employees;
+                
+                // Initialize attendance for new employees
+                employees.forEach(name => {
+                    if (!attendance[name]) {
+                        attendance[name] = 'not-set';
+                    }
+                });
+                
+                // Save to local storage
+                saveData();
+                
+                console.log('Employee data loaded from URL:', employees);
+            }
+        } catch (error) {
+            console.log('Failed to load data from URL:', error);
+        }
+    }
+}
 
 // Display current date
 function displayCurrentDate() {
@@ -310,7 +340,7 @@ function clearData() {
     }
 }
 
-// Save data to localStorage
+// Save data to localStorage and generate share code
 function saveData() {
     const data = {
         employees: employees,
@@ -318,6 +348,22 @@ function saveData() {
         lastUpdated: new Date().toISOString()
     };
     localStorage.setItem('attendanceData', JSON.stringify(data));
+    
+    // Generate share code for easy data transfer
+    generateShareCode(data);
+}
+
+// Generate share code for data transfer
+function generateShareCode(data) {
+    if (employees.length > 0) {
+        const shareCode = btoa(JSON.stringify({
+            employees: data.employees,
+            timestamp: new Date().toISOString()
+        }));
+        
+        // Store the share code for display
+        localStorage.setItem('attendanceShareCode', shareCode);
+    }
 }
 
 // Load data from localStorage
@@ -409,7 +455,14 @@ function initializeShareLink() {
         showHostingInstructions();
     } else {
         // It's already hosted online
-        const shareUrl = window.location.href.split('?')[0] + '?mode=employee';
+        const shareCode = localStorage.getItem('attendanceShareCode');
+        let shareUrl = window.location.href.split('?')[0] + '?mode=employee';
+        
+        // Add employee data to the URL if available
+        if (shareCode && employees.length > 0) {
+            shareUrl += '&data=' + shareCode;
+        }
+        
         document.getElementById('shareLink').value = shareUrl;
     }
 }
@@ -950,4 +1003,98 @@ Enter one person's attendance:`);
     updateSummary();
     
     alert(`✅ ${name} marked as ${status}`);
+}
+
+// Export employee list for sharing
+function exportEmployeeList() {
+    if (employees.length === 0) {
+        alert('No employees to export. Please add employees first.');
+        return;
+    }
+    
+    const employeeList = employees.join('\n');
+    const blob = new Blob([employeeList], { type: 'text/plain;charset=utf-8;' });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", "employee_list.txt");
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    alert('Employee list exported! You can share this file with others.');
+}
+
+// Import employee list
+function importEmployeeList() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.txt';
+    input.onchange = function(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const content = e.target.result;
+                const names = content.split('\n').map(name => name.trim()).filter(name => name.length > 0);
+                
+                if (names.length > 0) {
+                    names.forEach(name => {
+                        if (!employees.includes(name)) {
+                            employees.push(name);
+                            attendance[name] = 'not-set';
+                        }
+                    });
+                    
+                    saveData();
+                    renderEmployeeList();
+                    updateSummary();
+                    initializeShareLink(); // Update share link with new data
+                    
+                    alert(`Imported ${names.length} employees successfully!`);
+                } else {
+                    alert('No valid employee names found in the file.');
+                }
+            };
+            reader.readAsText(file);
+        }
+    };
+    input.click();
+}
+
+// Add bulk employees
+function addBulkEmployees() {
+    const input = prompt(`Add multiple employees at once:
+
+Enter names separated by commas or new lines:
+Example: John Doe, Jane Smith, Mike Johnson
+
+Or one name per line:
+John Doe
+Jane Smith
+Mike Johnson`);
+    
+    if (!input) return;
+    
+    const names = input.split(/[,\n]/).map(name => name.trim()).filter(name => name.length > 0);
+    let addedCount = 0;
+    
+    names.forEach(name => {
+        if (!employees.includes(name)) {
+            employees.push(name);
+            attendance[name] = 'not-set';
+            addedCount++;
+        }
+    });
+    
+    if (addedCount > 0) {
+        saveData();
+        renderEmployeeList();
+        updateSummary();
+        initializeShareLink(); // Update share link with new data
+        alert(`Added ${addedCount} new employees successfully!`);
+    } else {
+        alert('No new employees added. All names already exist.');
+    }
 }
