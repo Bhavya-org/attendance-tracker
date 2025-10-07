@@ -35,7 +35,46 @@ Example: `https://bhavya-org.github.io/attendance-tracker`
 
 **Wait 2-3 minutes for deployment, then share this link with your team!** ✅
 
-### 🎯 CURRENT STATUS: You're Almost There! 
+## 🚨 IMPORTANT: Update Your GitHub Files
+
+Your GitHub site is still using the old files! You need to upload the updated files for the employee sharing to work.
+
+### 🔄 How to Update Your GitHub Files:
+
+**Method 1: Replace Files (Recommended)**
+1. Go to your GitHub repository: `https://github.com/bhavya-org/attendance-tracker`
+2. Click on **"index.html"** 
+3. Click the **pencil icon (Edit)** 
+4. **Delete all content** and paste the new content from your local `index.html`
+5. Click **"Commit changes"**
+6. Repeat for **"script.js"** and **"style.css"**
+
+**Method 2: Upload New Files**
+1. In your repository, click **"Add file"** → **"Upload files"**
+2. Drag the updated files from your `attendance_test` folder
+3. Check **"Replace existing files"**
+4. Click **"Commit changes"**
+
+**Method 3: Quick Fix - Add Employees Online**
+1. Go to your live site: `https://bhavya-org.github.io/attendance-tracker`
+2. Switch to **Manager Mode**
+3. Add all your employees again using the current interface
+4. The share link will then work for others
+
+### ⚠️ Why Others See "No Employees Found":
+- Your local files have the updated code
+- Your GitHub site still has the old code
+- Others are accessing the old version online
+- You need to update GitHub with the new files
+
+### 🎯 Quickest Solution:
+**Go to your live site and add employees again online!**
+1. Visit: `https://bhavya-org.github.io/attendance-tracker`
+2. Manager Mode → Add employees one by one
+3. Share link will automatically include employee data
+4. Others will then see the employee list
+
+--- 
 
 Based on your screenshots, everything is set up correctly:
 - ✅ GitHub Actions enabled
