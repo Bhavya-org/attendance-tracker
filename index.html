@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Attendance Tracker</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📋 Daily Attendance Tracker</h1>
+            <p class="date" id="currentDate"></p>
+        </header>
+
+        <main>
+            <!-- Login Section -->
+            <section id="loginSection" class="login-section">
+                <div class="login-container">
+                    <h2>🔐 Access Daily Attendance</h2>
+                    <div class="login-options">
+                        <div class="login-option manager-login">
+                            <h3>👨‍💼 Manager Access</h3>
+                            <div class="form-group">
+                                <input type="password" id="managerPassword" placeholder="Enter manager password">
+                                <button onclick="loginAsManager()" class="login-btn manager-btn">Login as Manager</button>
+                            </div>
+                            <p class="login-note">Default password: <code>admin123</code></p>
+                        </div>
+                        
+                        <div class="login-option employee-login">
+                            <h3>👤 Employee Access</h3>
+                            <div class="form-group">
+                                <select id="employeeSelect">
+                                    <option value="">Select your name</option>
+                                    <!-- Options will be populated dynamically -->
+                                </select>
+                                <input type="password" id="employeePassword" placeholder="Enter your employee ID">
+                                <button onclick="loginAsEmployee()" class="login-btn employee-btn">Login as Employee</button>
+                            </div>
+                            <p class="login-note">Use your name as password (e.g., "bhavya", "sahana")</p>
+                        </div>
+                    </div>
+                    
+                    <div class="login-footer">
+                        <p>🔒 Secure login ensures only authorized access to attendance data</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Main App (Hidden until logged in) -->
+            <div id="mainApp" style="display: none;">
+                <!-- User Info Bar -->
+                <section class="user-info">
+                    <div class="user-details">
+                        <span id="userInfo"></span>
+                        <button onclick="logout()" class="logout-btn">🚪 Logout</button>
+                    </div>
+                    <div class="sync-status" id="syncStatus">
+                        <span class="sync-indicator">🔄 Connecting to cloud...</span>
+                    </div>
+                </section>
+
+            <!-- Manager Mode Sections -->
+            <div id="managerMode" style="display: none;">
+                <!-- Configuration Notice -->
+                <section class="config-notice">
+                    <h2>✅ Team Management Dashboard</h2>
+                    <p><strong>Employee List:</strong> <span id="employeeListDisplay">Loading...</span></p>
+                    <p>Manage your team's attendance and view real-time reports.</p>
+                    <details>
+                        <summary>Team Management Options</summary>
+                        <p>Add/remove employees, view reports, and manage attendance data.</p>
+                        <p>All data is automatically saved to the cloud and synced across devices.</p>
+                    </details>
+                </section>
+
+                <!-- Add Employee Section -->
+                <section class="add-employee">
+                    <h2>Add New Employee</h2>
+                    <div class="form-group">
+                        <input type="text" id="employeeName" placeholder="Enter employee name">
+                        <button onclick="addEmployee()">Add Employee</button>
+                    </div>
+                    <div class="bulk-actions">
+                        <button onclick="addBulkEmployees()" class="bulk-btn">📝 Add Multiple</button>
+                        <button onclick="exportEmployeeList()" class="export-list-btn">📤 Export List</button>
+                        <button onclick="importEmployeeList()" class="import-list-btn">📥 Import List</button>
+                        <button onclick="resetToDefault()" class="reset-btn">🔄 Reset to Examples</button>
+                    </div>
+                </section>
+
+                <!-- Share Link Section -->
+                <section class="share-section">
+                    <h2>📤 Share with Employees</h2>
+                    <p>Send this link to your colleagues so they can mark their own attendance:</p>
+                    <div class="share-link">
+                        <input type="text" id="shareLink" readonly>
+                        <button onclick="copyShareLink()">📋 Copy Link</button>
+                        <button onclick="openShareOptions()">📱 More Options</button>
+                    </div>
+                    <p class="share-note">💡 Employees should open this link and switch to "Employee Mode"</p>
+                    
+                    <!-- Share options modal -->
+                    <div id="shareModal" class="share-modal" style="display: none;">
+                        <div class="share-modal-content">
+                            <span class="close-modal" onclick="closeShareOptions()">&times;</span>
+                            <h3>📱 Share Options</h3>
+                            <p>Choose how to share the attendance link:</p>
+                            <div class="share-options">
+                                <button onclick="copyAsWhatsAppMessage()">💬 WhatsApp Message</button>
+                                <button onclick="copyAsEmailText()">📧 Email Text</button>
+                                <button onclick="showQRCode()">📱 Show QR Code</button>
+                            </div>
+                            <textarea id="shareMessageText" readonly style="width: 100%; height: 100px; margin-top: 15px;"></textarea>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Employee Mode Section -->
+            <div id="employeeMode" style="display: none;">
+                <section class="employee-self-service">
+                    <h2 id="employeeWelcome">👤 Mark Your Attendance</h2>
+                    <div class="employee-info">
+                        <p>Welcome <strong id="loggedEmployeeName"></strong>!</p>
+                        <p>Please mark your attendance for today.</p>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Attendance Section (Visible based on mode) -->
+            <section class="attendance-section">
+                <h2 id="attendanceTitle">Today's Attendance</h2>
+                <div id="employeeList" class="employee-list">
+                    <!-- Employee cards will be dynamically added here -->
+                </div>
+            </section>
+
+            <!-- Summary Section -->
+            <section class="summary-section">
+                <h2>Today's Summary</h2>
+                <div class="summary-cards">
+                    <div class="summary-card present">
+                        <h3>Present in Office</h3>
+                        <span id="presentCount">0</span>
+                    </div>
+                    <div class="summary-card wfh">
+                        <h3>Work From Home</h3>
+                        <span id="wfhCount">0</span>
+                    </div>
+                    <div class="summary-card absent">
+                        <h3>Leave/Client Office</h3>
+                        <span id="absentCount">0</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Actions Section (Manager Only) -->
+            <section class="actions-section" id="actionsSection" style="display: none;">
+                <button onclick="generateReport()" class="report-btn">📧 Generate Email Report</button>
+                <button onclick="exportToCSV()" class="export-btn">📊 Export to CSV</button>
+                <button onclick="addManualAttendance()" class="manual-btn">✍️ Add Manual Entry</button>
+                <button onclick="resetDailyAttendance()" class="reset-btn">� Reset Today's Data</button>
+                <button onclick="showPendingAttendance()" class="pending-btn">⏰ Show Pending</button>
+            </section>
+
+            </div> <!-- End of mainApp -->
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
