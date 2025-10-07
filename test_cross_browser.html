@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Cross-Browser Data</title>
+</head>
+<body>
+    <h2>Cross-Browser Data Test</h2>
+    <div id="results"></div>
+    
+    <script>
+        // Test shared data storage
+        const SHARED_DATA_KEY = 'SHARED_ATTENDANCE_DATA';
+        const todayDate = new Date().toDateString();
+        
+        function testSharedData() {
+            const results = document.getElementById('results');
+            
+            // Test 1: Write some data
+            const testData = {};
+            testData[`${todayDate}_bhavya`] = {
+                employeeId: 'bhavya',
+                status: 'present',
+                timestamp: new Date().toISOString(),
+                date: todayDate
+            };
+            
+            localStorage.setItem(SHARED_DATA_KEY, JSON.stringify(testData));
+            
+            // Test 2: Read the data back
+            const readData = localStorage.getItem(SHARED_DATA_KEY);
+            const parsedData = JSON.parse(readData);
+            
+            results.innerHTML = `
+                <h3>✅ Shared Data Test Results:</h3>
+                <p><strong>Key:</strong> ${SHARED_DATA_KEY}</p>
+                <p><strong>Data Written:</strong> ${JSON.stringify(testData, null, 2)}</p>
+                <p><strong>Data Read:</strong> ${JSON.stringify(parsedData, null, 2)}</p>
+                <p><strong>Status:</strong> ${parsedData[`${todayDate}_bhavya`] ? '✅ SUCCESS' : '❌ FAILED'}</p>
+                <hr>
+                <p><em>Open this same file in another browser (including private/incognito) to test cross-browser sharing.</em></p>
+            `;
+        }
+        
+        testSharedData();
+    </script>
+</body>
+</html>
