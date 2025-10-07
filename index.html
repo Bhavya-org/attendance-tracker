@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Attendance Tracker</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📋 Daily Attendance Tracker</h1>
+            <p class="date" id="currentDate"></p>
+        </header>
+
+        <main>
+            <!-- Mode Selection -->
+            <section class="mode-selection">
+                <div class="mode-buttons">
+                    <button id="managerModeBtn" class="mode-btn active" onclick="switchMode('manager')">
+                        👨‍💼 Manager Mode
+                    </button>
+                    <button id="employeeModeBtn" class="mode-btn" onclick="switchMode('employee')">
+                        👤 Employee Mode
+                    </button>
+                </div>
+            </section>
+
+            <!-- Manager Mode Sections -->
+            <div id="managerMode">
+                <!-- Configuration Notice -->
+                <section class="config-notice">
+                    <h2>✅ Your Team is Ready!</h2>
+                    <p><strong>Employee List Configured:</strong> Bhavya, Sahana, Asha, Srikanth</p>
+                    <p>Your team members can now access the attendance tracker and see their names immediately!</p>
+                    <details>
+                        <summary>Need to add/remove employees?</summary>
+                        <p>Use the "Add Employee" form below or the "📝 Add Multiple" button to add more team members.</p>
+                        <p>To remove someone, click the "Remove Employee" button on their card in Manager Mode.</p>
+                    </details>
+                </section>
+
+                <!-- Add Employee Section -->
+                <section class="add-employee">
+                    <h2>Add New Employee</h2>
+                    <div class="form-group">
+                        <input type="text" id="employeeName" placeholder="Enter employee name">
+                        <button onclick="addEmployee()">Add Employee</button>
+                    </div>
+                    <div class="bulk-actions">
+                        <button onclick="addBulkEmployees()" class="bulk-btn">📝 Add Multiple</button>
+                        <button onclick="exportEmployeeList()" class="export-list-btn">📤 Export List</button>
+                        <button onclick="importEmployeeList()" class="import-list-btn">📥 Import List</button>
+                        <button onclick="resetToDefault()" class="reset-btn">🔄 Reset to Examples</button>
+                    </div>
+                </section>
+
+                <!-- Share Link Section -->
+                <section class="share-section">
+                    <h2>📤 Share with Employees</h2>
+                    <p>Send this link to your colleagues so they can mark their own attendance:</p>
+                    <div class="share-link">
+                        <input type="text" id="shareLink" readonly>
+                        <button onclick="copyShareLink()">📋 Copy Link</button>
+                        <button onclick="openShareOptions()">📱 More Options</button>
+                    </div>
+                    <p class="share-note">💡 Employees should open this link and switch to "Employee Mode"</p>
+                    
+                    <!-- Share options modal -->
+                    <div id="shareModal" class="share-modal" style="display: none;">
+                        <div class="share-modal-content">
+                            <span class="close-modal" onclick="closeShareOptions()">&times;</span>
+                            <h3>📱 Share Options</h3>
+                            <p>Choose how to share the attendance link:</p>
+                            <div class="share-options">
+                                <button onclick="copyAsWhatsAppMessage()">💬 WhatsApp Message</button>
+                                <button onclick="copyAsEmailText()">📧 Email Text</button>
+                                <button onclick="showQRCode()">📱 Show QR Code</button>
+                            </div>
+                            <textarea id="shareMessageText" readonly style="width: 100%; height: 100px; margin-top: 15px;"></textarea>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Employee Mode Section -->
+            <div id="employeeMode" style="display: none;">
+                <section class="employee-self-service">
+                    <h2>👤 Mark Your Attendance</h2>
+                    <div class="employee-finder">
+                        <input type="text" id="employeeSearch" placeholder="Search for your name..." oninput="filterEmployees()">
+                        <div class="search-results" id="searchResults"></div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Attendance Section (Visible in both modes) -->
+            <section class="attendance-section">
+                <h2 id="attendanceTitle">Today's Attendance</h2>
+                <div id="employeeList" class="employee-list">
+                    <!-- Employee cards will be dynamically added here -->
+                </div>
+            </section>
+
+            <!-- Summary Section -->
+            <section class="summary-section">
+                <h2>Today's Summary</h2>
+                <div class="summary-cards">
+                    <div class="summary-card present">
+                        <h3>Present in Office</h3>
+                        <span id="presentCount">0</span>
+                    </div>
+                    <div class="summary-card wfh">
+                        <h3>Work From Home</h3>
+                        <span id="wfhCount">0</span>
+                    </div>
+                    <div class="summary-card absent">
+                        <h3>Leave/Client Office</h3>
+                        <span id="absentCount">0</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Actions Section -->
+            <section class="actions-section" id="actionsSection">
+                <button onclick="generateReport()" class="report-btn">📧 Generate Email Report</button>
+                <button onclick="exportToCSV()" class="export-btn">📊 Export to CSV</button>
+                <button onclick="addManualAttendance()" class="manual-btn">✍️ Add Manual Entry</button>
+                <button onclick="clearData()" class="clear-btn">🗑️ Clear All Data</button>
+                <button onclick="showPendingAttendance()" class="pending-btn">⏰ Show Pending</button>
+            </section>
+
+            <!-- Report Display -->
+            <section class="report-section" id="reportSection" style="display: none;">
+                <h2>Email Report</h2>
+                <textarea id="emailReport" readonly></textarea>
+                <button onclick="copyReport()">📋 Copy to Clipboard</button>
+            </section>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
